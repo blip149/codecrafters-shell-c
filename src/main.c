@@ -5,14 +5,20 @@
 int main(int argc, char *argv[]) {
   // Flush after every printf
   setbuf(stdout, NULL);
-
-  printf("$ ");
-
   char command[1024];
-  fgets(command, sizeof(command), stdin);
-  command[strcspn(command, "\n")] = '\0';
 
-  printf("%s: command not found\n", command);
+  while(1) {
+    printf("$ ");
+
+    if (fgets(command, sizeof(command), stdin) == NULL){
+      printf("\nExiting..\n");
+      break;
+    }
+
+    int spn = strcspn(command, "\n");
+    command[spn] = '\0';
+  }
 
   return 0;
 }
+
