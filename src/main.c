@@ -18,7 +18,7 @@ int main(int argc, char *argv[]) {
     int spn = strcspn(command, "\n");
     command[spn] = '\0';
 
-    printf("%s: command not found", command);
+    printf("%s: command not found\n", command);
   }
 
   return 0;
