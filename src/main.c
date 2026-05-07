@@ -18,7 +18,11 @@ int main(int argc, char *argv[]) {
     int spn = strcspn(command, "\n");
     command[spn] = '\0';
 
-    if (strcmp(command, "exit") == 0) break;
+    if (strcmp(command, "exit") == 0 || strcmp(command, "quit")) break;
+
+    if (strncmp(command, "echo", 5) == 0){
+      printf("%s", command + 5);
+    }
     printf("%s: command not found\n", command);
     
   }
