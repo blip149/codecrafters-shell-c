@@ -8,10 +8,12 @@
     #define PATH_SEP ";"
     #define access _access
     #define EXE_EXT ".exe"
+    #define EXIST 0
 #else
     #include <unistd.h>
     #define PATH_SEP ":"
     #define EXE_EXT ""
+    #define EXIST X_OK
 #endif
 
 // Function Prototypes
@@ -75,7 +77,7 @@ void handle_type(char *arg) {
         while (dir) {
             // Check for both the raw name and the name + .exe for Windows compatibility
             snprintf(full_path, sizeof(full_path), "%s/%s%s", dir, arg, EXE_EXT);
-            if (access(full_path, 0) == 0) {
+            if (access(full_path, EXIST) == 0) {
                 printf("%s is %s\n", arg, full_path);
                 free(path_copy);
                 return;
