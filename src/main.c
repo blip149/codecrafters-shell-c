@@ -1,11 +1,16 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <io.h>
+
+
+static char* builtins[] = {"echo", "type", "exit", "quit", NULL};
+
+int handle_cmd(char *cmd);
 
 int main() {
     setbuf(stdout, NULL);
     char command[1024];
-    char builtins[4][8] = {"echo", "type", "exit", "quit"};
 
     while(1) {
         printf("$ ");
@@ -35,21 +40,10 @@ int main() {
         else if (strcmp(cmd, "type") == 0) {
             if (arg == NULL) {
                 printf("type: missing operand\n");
-            } else {
-                int found = 0;
-                for (int i = 0; i < 4; i++) {
-                    if (strcmp(arg, builtins[i]) == 0) {
-                        printf("%s is a shell builtin\n", arg);
-                        found = 1;
-                        break;
-                    }
-                }
-                if (!found) {
-                    printf("%s: not found\n", arg);
-                }
+            } else{
+                handle_cmd(arg);
             }
         }
-
         else {
             printf("%s: command not found\n", cmd);
         }
@@ -57,4 +51,36 @@ int main() {
     return 0;
 }
 
+int handle_cmd(char* cmd) {
+    for (int i = 0; builtins[i] != NULL; i++){
+        if (strcmp(cmd, builtins[i]) == 0){
+            printf("%s is a shell builtin\n", cmd);
+            return 0;
+        }
+    }
 
+    char* env_path = getenv("PATH");
+    if (env_path == NULL) {
+        printf("%s: not found (PATH empty)\n", cmd);
+        return 1;
+    }
+
+    char* path_copy = strdup(env_path);
+    char* dir = strtok(path_copy, ";");
+    static char result_path[1024];
+
+    while (dir != NULL) {
+        snprintf(result_path, sizeof(result_path), "%s\\%s.exe", dir, cmd);
+        
+        if(_access(result_path, 0) == 0){
+            printf("%s is %s\n", cmd, result_path);
+            free(path_copy);
+            return 0;
+        }
+        dir = strtok(NULL, ";");
+    }
+
+    free(path_copy);
+    printf("%s: not found\n", cmd);
+    return 0;
+}
