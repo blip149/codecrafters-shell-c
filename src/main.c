@@ -18,12 +18,14 @@ int main(int argc, char *argv[]) {
     int spn = strcspn(command, "\n");
     command[spn] = '\0';
 
-    if (strcmp(command, "exit") == 0 || strcmp(command, "quit")) break;
+    if (strcmp(command, "exit") == 0 || strcmp(command, "quit") == 0) break;
 
-    if (strncmp(command, "echo", 5) == 0){
+    if (strncmp(command, "echo", 4) == 0){
       printf("%s\n", command + 5);
+    }else{
+      printf("%s: command not found\n", command);
     }
-    printf("%s: command not found\n", command);
+    
     
   }
   return 0;
