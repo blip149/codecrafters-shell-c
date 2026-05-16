@@ -1,0 +1,95 @@
+#include "command.h"
+
+static const char* builtins[] = {"echo", "exit", "type", "quit" };
+
+void parse_command(Command *cmd, const char* input){
+    if (cmd->cmd != NULL) {
+        free(cmd->cmd);
+        cmd->cmd = NULL;
+    }
+
+    strncpy(cmd->raw_input, input, sizeof(cmd->raw_input)-1);
+    cmd->raw_input[strcspan(cmd->raw_input, "\r\n") ] = '\0';
+
+    char *first_space = strchr(cmd->raw_input,' ');
+
+    if (first_space){
+        size_t len = first_space - cmd->raw_input;
+        cmd->cmd = malloc(len + 1);
+
+        strncpy(cmd->cmd, cmd->raw_input, len);
+        cmd->cmd[len] = '\0';
+        char* arg_ptr = first_space++;
+        while(*arg_ptr == ' '){
+            arg_ptr++;
+        }
+        cmd->args = (*arg_ptr != '\0')? arg_ptr:NULL;
+
+    }else{
+        cmd->cmd =  strdup(cmd->raw_input);
+        cmd->args = NULL;
+    }
+}
+
+int execute_command(Command* cmd) {
+    if (!cmd->cmd) return 1;
+
+    if (strcmp(cmd->cmd, "exit")==0 || strcmp(cmd->cmd, "quit")==0){
+        return 0;
+    }
+
+    if (strcmp(cmd->cmd, "echo")==0){
+        printf("%s", (cmd->cmd)? cmd->args:"");
+    }
+    if (strcmp(cmd->cmd, "type")==0){
+        handle_cmd(cmd->args);
+    }else{
+        printf("%s: command not found\n", cmd->cmd);
+    }
+    return 1;
+}
+
+int is_builtin(char *cmd) {
+    for (int i = 0; builtins[i]; i++) {
+        if (strcmp(cmd, builtins[i]) == 0) return 1;
+    }
+    return 0;
+}
+
+void handle_cmd(const char *arg) {
+    char *path_copy = NULL;
+    int found = 0;
+
+    if (!arg) {
+        printf("type: missing operand\n");
+        return;
+    }
+
+    if (is_builtin(arg)) {
+        printf("%s is a shell builtin\n", arg);
+        return;
+    }
+
+    char *env_path = getenv("PATH");
+    if (!env_path) goto cleanup; 
+
+    path_copy = strdup(env_path);
+    char *dir = strtok(path_copy, PATH_SEP);
+    char full_path[1024];
+
+    while (dir) {
+        snprintf(full_path, sizeof(full_path), "%s/%s%s", dir, arg, EXE_EXT);
+        if (access(full_path, EXIST) == 0) {
+            printf("%s is %s\n", arg, full_path);
+            found = 1; 
+            goto cleanup;
+        }
+        dir = strtok(NULL, PATH_SEP);
+    }
+
+cleanup:
+    if (!found) {
+        printf("%s: not found\n", arg);
+    }
+    if (path_copy) free(path_copy);
+}
