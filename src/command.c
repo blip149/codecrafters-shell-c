@@ -61,7 +61,7 @@ void run_external_program(const char* cmd, const char* args){
     if (!env_path) goto cleanup;
 
     path_copy = strdup(env_path);
-    char *dir = strtok(path_copy, " PATH_SEP");
+    char *dir = strtok(path_copy, PATH_SEP);
     char full_path[1024];
 
     while(dir) {
