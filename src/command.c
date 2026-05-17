@@ -37,7 +37,7 @@ int handle_command(Command* cmd) {
     if (strcmp(cmd->cmd, "exit")==0 || strcmp(cmd->cmd, "quit")==0){
         return 0;
     }else if (strcmp(cmd->cmd, "echo")==0){
-        printf("%s", (cmd->cmd)? cmd->args:"");
+        printf("%s\n", (cmd->cmd)? cmd->args:"");
     }else if (strcmp(cmd->cmd, "type")==0){
         execute_command(cmd->args);
     }else{
@@ -94,7 +94,7 @@ void run_external_program(const char* cmd, const char* args){
                 if (pid < 0){
                     perror("fork failed");
                 }else if (pid == 0){
-                    char argv[LIMIT];
+                    char *argv[LIMIT];
                     int argc = 0;
 
                     argv[argc++] = (char*)cmd;
@@ -104,12 +104,12 @@ void run_external_program(const char* cmd, const char* args){
                         char *tokens = strtok(args_copy, " ");
 
                         while (tokens && argc < (LIMIT -1)){
-                            argv[argc++] = token;
-                            token = strtok(NULL," ");
+                            argv[argc++] = tokens;
+                            tokens = strtok(NULL," ");
                         }
                     }
                         argv[argc] = NULL;
-                        execv(cmd, argv);
+                        execv(full_path, argv);
                         
                         perror("execution failed");
                         exit(1);
@@ -123,7 +123,7 @@ void run_external_program(const char* cmd, const char* args){
     }
     cleanup:
         if (!found){
-            printf("%s: command not found\n", args);
+            printf("%s: command not found\n", cmd);
         }
         if (path_copy) free(path_copy);
 }
