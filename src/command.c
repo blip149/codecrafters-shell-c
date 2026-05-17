@@ -61,11 +61,11 @@ void run_external_program(const char* cmd, const char* args){
     if (!env_path) goto cleanup;
 
     path_copy = strdup(env_path);
-    char *dir = strtok(path_copy, " ");
+    char *dir = strtok(path_copy, " PATH_SEP");
     char full_path[1024];
 
     while(dir) {
-        snprintf(full_path, sizeof(full_path), "%s/%s%S", dir, args, EXE_EXT);
+        snprintf(full_path, sizeof(full_path), "%s/%s%s", dir, cmd, EXE_EXT);
         if (access(full_path, X_OK) == 0){
             found = 1;
             #ifdef _WIN32
