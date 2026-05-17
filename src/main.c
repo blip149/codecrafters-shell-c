@@ -14,7 +14,7 @@ int main() {
 
         command_parse(&cmd, buffer);
         
-        if (!command_execute(&cmd)) {
+        if (!handle_command(&cmd)) {
             break; 
         }
     }

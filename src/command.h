@@ -7,21 +7,22 @@
     #define PATH_SEP ";"
     #define access _access
     #define EXE_EXT ".exe"
-    #define EXIST 0
+    #define X_OK 0
+    #include <windows.h>
 #else
     #include <unistd.h>
     #define PATH_SEP ":"
     #define EXE_EXT ""
-    #define EXIST X_OK
+    #include <sys/types.h>
+    #include <sys/wait>
 #endif
-
+#define LIMIT 64
 
 
 
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
-
 
 
 
@@ -32,8 +33,8 @@ typedef struct{
 }Command;
 
 void parse_command(Command* cmd, const char *input);
-int execute_cmd(Command* cmd);
-void handle_cmd(const char* args);
+void execute_command(const char* args);
+int handle_command(Command* cmd);
 int is_builtin(const char* cmd);
 
 #endif
