@@ -12,7 +12,7 @@ int main() {
         printf("$ ");
         if (!fgets(buffer, sizeof(buffer), stdin)) break;
 
-        command_parse(&cmd, buffer);
+        parse_command(&cmd, buffer);
         
         if (!handle_command(&cmd)) {
             break; 
