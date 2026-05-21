@@ -26,7 +26,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <limits.h>
-
+#include <errno.h>
 
 
 typedef struct{
