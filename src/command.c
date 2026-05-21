@@ -68,7 +68,7 @@ int gwd() {
 void cd(const char* arg){
     char* home = getenv("HOME");
 
-    if (strcmp(arg, "~")==0 || arg == NULL) printf("%s\n",home);
+    if (strcmp(arg, "~")==0 || arg == NULL) chdir(home);
 
     if (chdir(arg)!=0){
         if (errno == ENOENT){
