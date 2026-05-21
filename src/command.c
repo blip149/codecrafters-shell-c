@@ -68,13 +68,15 @@ int gwd() {
 void cd(const char* arg){
     char* home = getenv("HOME");
 
-    if (strcmp(arg, "~")==0 || arg == NULL) chdir(home);
-
-    if (chdir(arg)!=0){
-        if (errno == ENOENT){
-            fprintf(stderr, "cd: %s: No such file or directory\n", arg);
-        }else{
-            perror("error");
+    if (strcmp(arg, "~")==0 || arg == NULL){
+        chdir(home);
+    }else{
+        if (chdir(arg)!= 0){
+            if (errno==ENOENT){
+                printf("cd: %s: NO such file or directory\n", arg);
+            }else{
+                perror("error");
+            }
         }
     }
 }
