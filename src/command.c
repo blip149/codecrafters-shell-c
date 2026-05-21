@@ -73,7 +73,7 @@ void cd(const char* arg){
     }else{
         if (chdir(arg)!= 0){
             if (errno==ENOENT){
-                printf("cd: %s: NO such file or directory\n", arg);
+                printf("cd: %s: No such file or directory\n", arg);
             }else{
                 perror("error");
             }
