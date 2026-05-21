@@ -1,34 +1,86 @@
 #include "command.h"
+#include <stdbool.h>
+#define bool _Bool
 
 static const char* builtins[] = {"echo", "exit", "type", "quit", "pwd"};
 
-void parse_command(Command *cmd, const char* input){
+typedef enum{
+    NORMAL_STATE,
+    IN_DQUOTES,
+    IN_SQUOTES,
+}State;
+
+static void parse(const char* src){
+    if (!src) return;
+
+    char *dst = src;
+    State state = NORMAL_STATE;
+    bool escaped = false;
+
+    while (*src != '\0') {
+        if (escaped) {
+            if (state == IN_DQUOTES) {
+                if (*src == '\\' || *src == '"' || *src == '$' || *src == '`') {
+                    *dst++ = *src;
+                } else {
+                    *dst++ = '\\'; 
+                    *dst++ = *src;
+                }
+            } else {
+                *dst++ = *src;
+            }
+            escaped = false;
+            src++;
+        } 
+        else if (*src == '\\' && state != IN_SQUOTES) {
+            escaped = true;
+            src++;
+        } 
+        else if (*src == '\'' && state != IN_SQUOTES) {
+            state = (state == IN_SQUOTES) ? NORMAL_STATE : IN_SQUOTES;
+            src++;
+        } 
+        else if (*src == '"' && state != IN_SQUOTES) {
+            state = (state == IN_SQUOTES) ? NORMAL_STATE : IN_SQUOTES;
+            src++;
+        } 
+        else {
+            *dst++ = *src++;
+        }
+    }
+    *dst = '\0';
+}
+
+void parse_command(Command *cmd, const char* input) {
     if (cmd->cmd != NULL) {
         free(cmd->cmd);
         cmd->cmd = NULL;
     }
 
-    strncpy(cmd->raw_input, input, sizeof(cmd->raw_input)-1);
-    cmd->raw_input[strcspn(cmd->raw_input, "\r\n") ] = '\0';
+    strncpy(cmd->raw_input, input, sizeof(cmd->raw_input) - 1);
+    cmd->raw_input[strcspn(cmd->raw_input, "\r\n")] = '\0';
 
-    char *first_space = strchr(cmd->raw_input,' ');
+    char *first_space = strchr(cmd->raw_input, ' ');
 
-    if (first_space){
+    if (first_space) {
         size_t len = first_space - cmd->raw_input;
         cmd->cmd = malloc(len + 1);
-
         strncpy(cmd->cmd, cmd->raw_input, len);
         cmd->cmd[len] = '\0';
-        char* arg_ptr = first_space++;
-        while(*arg_ptr == ' '){
+
+        char *arg_ptr = first_space + 1;
+        while (*arg_ptr == ' ') {
             arg_ptr++;
         }
-        cmd->args = (*arg_ptr != '\0')? arg_ptr:NULL;
-
-    }else{
-        cmd->cmd =  strdup(cmd->raw_input);
+        cmd->args = (*arg_ptr != '\0') ? arg_ptr : NULL;
+    } else {
+        cmd->cmd = strdup(cmd->raw_input);
         cmd->args = NULL;
     }
+
+
+    parse(cmd->cmd);
+    parse(cmd->args);
 }
 
 int handle_command(Command* cmd) {

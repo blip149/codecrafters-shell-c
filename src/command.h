@@ -40,6 +40,7 @@ void find_path(const char* args);
 void run_external_program(const char* cmd_name, const char* args);
 int handle_command(Command* cmd);
 int is_builtin(const char* cmd);
+static void parse(const char* src);
 void cd(const char* arg);
 int gwd();
 
