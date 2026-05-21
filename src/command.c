@@ -1,6 +1,6 @@
 #include "command.h"
 
-static const char* builtins[] = {"echo", "exit", "type", "quit" };
+static const char* builtins[] = {"echo", "exit", "type", "quit", "pwd"};
 
 void parse_command(Command *cmd, const char* input){
     if (cmd->cmd != NULL) {
