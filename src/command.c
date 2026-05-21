@@ -40,11 +40,27 @@ int handle_command(Command* cmd) {
         printf("%s\n", (cmd->cmd)? cmd->args:"");
     }else if (strcmp(cmd->cmd, "type")==0){
         find_path(cmd->args);
-    }else{
+    }else if (strcmp(cmd->cmd, "pwd")==0){
+        gwd();
+    }
+    else{
         run_external_program(cmd->cmd, cmd->args);
     }
     return 1;
     
+}
+
+
+int gwd() {
+    char cwd[PATH_MAX];
+
+    if (getcwd(cwd, sizeof(cwd))!=NULL){
+        printf("%s", cwd);
+    }else{
+        perror("Error");
+        return 1;
+    }
+    return 0;
 }
 
 
@@ -143,15 +159,6 @@ void find_path(const char *args) {
         return;
     }
 
-    {
-        char cwd[PATH_MAX];
-        if (getcwd(cwd, sizeof(cwd))!=NULL){
-            printf("%s", cwd);
-        }else{
-            perror("Error");
-            return 1;
-        }
-    }
 
     char *env_path = getenv("PATH");
     if (!env_path) goto cleanup; 

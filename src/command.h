@@ -8,6 +8,7 @@
     #define access _access
     #define EXE_EXT ".exe"
     #define X_OK 0
+    #define getcwd _getcwd
     #include <windows.h>
 #else
     #include <unistd.h>
@@ -23,6 +24,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <limits.h>
 
 
 
@@ -37,6 +39,6 @@ void find_path(const char* args);
 void run_external_program(const char* cmd_name, const char* args);
 int handle_command(Command* cmd);
 int is_builtin(const char* cmd);
-
+int gwd();
 #endif
 
