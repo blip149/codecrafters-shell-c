@@ -39,13 +39,14 @@ int handle_command(Command* cmd) {
     }else if (strcmp(cmd->cmd, "echo")==0){
         printf("%s\n", (cmd->cmd)? cmd->args:"");
     }else if (strcmp(cmd->cmd, "type")==0){
-        execute_command(cmd->args);
+        find_path(cmd->args);
     }else{
         run_external_program(cmd->cmd, cmd->args);
     }
     return 1;
     
 }
+
 
 int is_builtin(const char *cmd) {
     for (int i = 0; builtins[i]; i++) {
@@ -128,7 +129,7 @@ void run_external_program(const char* cmd, const char* args){
         if (path_copy) free(path_copy);
 }
 
-void execute_command(const char *args) {
+void find_path(const char *args) {
     char *path_copy = NULL;
     int found = 0;
 
@@ -140,6 +141,16 @@ void execute_command(const char *args) {
     if (is_builtin(args)) {
         printf("%s is a shell builtin\n", args);
         return;
+    }
+
+    {
+        char cwd[PATH_MAX];
+        if (getcwd(cwd, sizeof(cwd))!=NULL){
+            printf("%s", cwd);
+        }else{
+            perror("Error");
+            return 1;
+        }
     }
 
     char *env_path = getenv("PATH");
