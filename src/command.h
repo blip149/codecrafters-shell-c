@@ -9,6 +9,7 @@
     #define EXE_EXT ".exe"
     #define X_OK 0
     #define getcwd _getcwd
+    #define chdir  _chdir
     #include <windows.h>
 #else
     #include <unistd.h>
@@ -39,6 +40,8 @@ void find_path(const char* args);
 void run_external_program(const char* cmd_name, const char* args);
 int handle_command(Command* cmd);
 int is_builtin(const char* cmd);
+void cd(const char* arg);
 int gwd();
+
 #endif
 

@@ -42,6 +42,8 @@ int handle_command(Command* cmd) {
         find_path(cmd->args);
     }else if (strcmp(cmd->cmd, "pwd")==0){
         gwd();
+    }else if (strcmp(cmd->cmd, "cd")==0){
+        cd(cmd->args);
     }
     else{
         run_external_program(cmd->cmd, cmd->args);
@@ -61,6 +63,20 @@ int gwd() {
         return 1;
     }
     return 0;
+}
+
+void cd(const char* arg){
+    char* home = getenv("HOME");
+
+    if (strcmp(arg, "~")==0 || arg == NULL) printf("%s\n",home);
+
+    if (chdir(arg)!=0){
+        if (errno == ENOENT){
+            fprintf(stderr, "cd: %s no such file or directory", arg);
+        }else{
+            perror("error");
+        }
+    }
 }
 
 
@@ -131,7 +147,8 @@ void run_external_program(const char* cmd, const char* args){
                         perror("execution failed");
                         exit(1);
                     }else{
-                        wait(NULL);
+                        int status;
+                        waitpid(pid, &status, 0);
                     }
             #endif
             goto cleanup;
