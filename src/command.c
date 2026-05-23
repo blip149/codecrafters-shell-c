@@ -13,38 +13,34 @@ typedef enum{
 static void parse(const char* src){
     if (!src) return;
 
-    char *dst = src;
+    char* dst = src;
     State state = NORMAL_STATE;
     bool escaped = false;
 
-    while (*src != '\0') {
-        if (escaped) {
-            if (state == IN_DQUOTES) {
-                if (*src == '\\' || *src == '"' || *src == '$' || *src == '`') {
+    while(*src != '\0'){
+        if (escaped){
+            if(state == IN_DQUOTES){
+                if (*src == '\\' || *src =='$'|| *src == '"'){
                     *dst++ = *src;
-                } else {
-                    *dst++ = '\\'; 
+                }else{
+                    *dst = '\\';
                     *dst++ = *src;
                 }
-            } else {
+            }else{
                 *dst++ = *src;
             }
             escaped = false;
-            src++;
-        } 
-        else if (*src == '\\' && state != IN_SQUOTES) {
+            *src++;
+        }else if (state != IN_SQUOTES && *src =='\\'){
             escaped = true;
             src++;
-        } 
-        else if (*src == '\'' && state != IN_SQUOTES) {
-            state = (state == IN_SQUOTES) ? NORMAL_STATE : IN_SQUOTES;
+        }else if(*src =='\'' && state != IN_DQUOTES){
+            state = (state == IN_SQUOTES) ? NORMAL_STATE:IN_SQUOTES;
             src++;
-        } 
-        else if (*src == '"' && state != IN_SQUOTES) {
-            state = (state == IN_SQUOTES) ? NORMAL_STATE : IN_SQUOTES;
+        }else if (*src == '"' && state != IN_SQUOTES) {
+            state = (state == IN_DQUOTES) ? NORMAL_STATE:IN_DQUOTES;
             src++;
-        } 
-        else {
+        }else {
             *dst++ = *src++;
         }
     }
