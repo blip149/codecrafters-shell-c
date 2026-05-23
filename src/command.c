@@ -10,7 +10,7 @@ typedef enum{
     IN_SQUOTES,
 }State;
 
-static void parse(const char* src){
+static void parse(const char* src,const char* start){
     if (!src) return;
 
     char* dst = src;
@@ -41,7 +41,14 @@ static void parse(const char* src){
             state = (state == IN_DQUOTES) ? NORMAL_STATE:IN_DQUOTES;
             src++;
         }else {
+            if (*src == ' ' && state == NORMAL_STATE){
+                if (dst != start && *(dst -1) != ' '){
+                    *dst++ = *src;
+                }
+                src++;
+            }else{
             *dst++ = *src++;
+            }
         }
     }
     *dst = '\0';
@@ -75,8 +82,8 @@ void parse_command(Command *cmd, const char* input) {
     }
 
 
-    parse(cmd->cmd);
-    parse(cmd->args);
+    parse(cmd->cmd, cmd->cmd);
+    parse(cmd->args, cmd->args);
 }
 
 int handle_command(Command* cmd) {
