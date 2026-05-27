@@ -13,6 +13,8 @@
     #include <windows.h>
     #define PATH_MAX 4096
     #define fileno _fileno
+    #define dup _dup
+    #define dup2 _dup2
 
 #else
     #include <unistd.h>

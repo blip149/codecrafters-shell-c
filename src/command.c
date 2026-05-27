@@ -98,31 +98,49 @@ void parse_command(Command *cmd, const char* input) {
     cmd->args[cmd->argc] = NULL;
 }
 
+
+
 int handle_command(Command* cmd) {
     if (!cmd->cmd) return 1;
 
-    if (strcmp(cmd->cmd, "exit")==0 || strcmp(cmd->cmd, "quit")==0){
-        return 0;
-    }else if (strcmp(cmd->cmd, "echo")==0){
-        for (int i = 0; i<cmd->argc; i++){
-            printf("%s%s", cmd->args[i], (i == cmd->argc - 1) ? "":" ");
+
+    int original_stdout = dup(STDOUT_FILENO);
+    if (original_stdout < 0) {
+        perror("dup failed");
+        return 1;
+    }
+
+    red_stdout(cmd);
+
+    int result = 1;
+
+
+    if (strcmp(cmd->cmd, "exit") == 0 || strcmp(cmd->cmd, "quit") == 0) {
+        result = 0;
+    } else if (strcmp(cmd->cmd, "echo") == 0) {
+        for (int i = 0; i < cmd->argc; i++) {
+            printf("%s%s", cmd->args[i], (i == cmd->argc - 1) ? "" : " ");
         }
         printf("\n");
-        
-    }else if (strcmp(cmd->cmd, "type")==0){
+    } else if (strcmp(cmd->cmd, "type") == 0) {
         find_path(cmd->args[0]);
-    }else if (strcmp(cmd->cmd, "pwd")==0){
+    } else if (strcmp(cmd->cmd, "pwd") == 0) {
         gwd();
-    }else if (strcmp(cmd->cmd, "cd")==0){
+    } else if (strcmp(cmd->cmd, "cd") == 0) {
         cd(cmd->argc > 0 ? cmd->args[0] : NULL);
-    }
-    else{
-        red_stdout(cmd);
+    } else {
         run_external_program(cmd);
     }
-    return 1;
-    
+
+    fflush(stdout);
+
+
+    dup2(original_stdout, STDOUT_FILENO);
+    close(original_stdout);
+
+    return result;
 }
+
 
 
 int gwd() {
