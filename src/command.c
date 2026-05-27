@@ -10,7 +10,7 @@ typedef enum{
     IN_SQUOTES,
 }State;
 
-static void parse(const char* peek_ptr,const char* start){
+static void parse(char* peek_ptr,const char* start){
     if (!peek_ptr) return;
 
     char* s_ptr = peek_ptr;
@@ -23,14 +23,14 @@ static void parse(const char* peek_ptr,const char* start){
                 if (*peek_ptr == '\\' || *peek_ptr =='$'|| *peek_ptr == '"'){
                     *s_ptr++ = *peek_ptr;
                 }else{
-                    *s_ptr = '\\';
+                    *s_ptr++ = '\\';
                     *s_ptr++ = *peek_ptr;
                 }
             }else{
                 *s_ptr++ = *peek_ptr;
             }
             escaped = false;
-            *peek_ptr++;
+            peek_ptr++;
         }else if (state != IN_SQUOTES && *peek_ptr =='\\'){
             escaped = true;
             peek_ptr++;
@@ -57,8 +57,8 @@ static void parse(const char* peek_ptr,const char* start){
 void parse_command(Command *cmd, const char* input) {
     if (cmd->cmd != NULL) {
         free(cmd->cmd);
+        cmd->cmd = NULL;
     }
-    memset(cmd, 0, sizeof(Command));
 
     strncpy(cmd->raw_input, input, sizeof(cmd->raw_input) - 1);
     cmd->raw_input[strcspn(cmd->raw_input, "\r\n")] = '\0';
@@ -77,7 +77,7 @@ void parse_command(Command *cmd, const char* input) {
         }
         cmd->args = (*arg_ptr != '\0') ? arg_ptr : NULL;
     } else {
-        cmd->cmd = strdup(cmd->raw_input);
+        cmd->cmd = _strdup(cmd->raw_input);
         cmd->args = NULL;
     }
 
@@ -123,7 +123,7 @@ int gwd() {
 void cd(const char* arg){
     char* home = getenv("HOME");
 
-    if (strcmp(arg, "~")==0 || arg == NULL){
+    if (arg==NULL || strcmp(arg, "~") == 0){
         chdir(home);
     }else{
         if (chdir(arg)!= 0){
@@ -150,7 +150,7 @@ void run_external_program(const char* cmd, const char* args){
     char* env_path = getenv("PATH");
     if (!env_path) goto cleanup;
 
-    path_copy = strdup(env_path);
+    path_copy = _strdup(env_path);
     char *dir = strtok(path_copy, PATH_SEP);
     char full_path[1024];
 
@@ -174,10 +174,10 @@ void run_external_program(const char* cmd, const char* args){
                 }
                 if (CreateProcess(NULL, cmd_line, NULL, NULL, 0,FALSE,NULL, NULL,&si, &pi )){
                     WaitForSingleObject(pi.hProcess, INFINITE);
-                    CloseHanlde(pi.hProcess);
+                    CloseHandle(pi.hProcess);
                     CloseHandle(pi.hThread);
                 }else{
-                    printf("failed to execute(%d).\n", GetLastError);
+                    printf("failed to execute(%lu).\n", GetLastError());
                 }
             #else
                 pid_t pid = fork();
@@ -190,7 +190,7 @@ void run_external_program(const char* cmd, const char* args){
                     argv[argc++] = (char*)cmd;
 
                     if (args && strlen(args)>0){
-                        char *args_copy = strdup(args);
+                        char *args_copy = _strdup(args);
                         char *tokens = strtok(args_copy, " ");
 
                         while (tokens && argc < (LIMIT -1)){
@@ -198,6 +198,7 @@ void run_external_program(const char* cmd, const char* args){
                             tokens = strtok(NULL," ");
                         }
                     }
+                        printf("Debug: Executing command [%s] with args [%s]", cmd->cmd, cmd->args);
                         argv[argc] = NULL;
                         execv(full_path, argv);
                         
@@ -237,7 +238,7 @@ void find_path(const char *args) {
     char *env_path = getenv("PATH");
     if (!env_path) goto cleanup; 
 
-    path_copy = strdup(env_path);
+    path_copy = _strdup(env_path);
     char *dir = strtok(path_copy, PATH_SEP);
     char full_path[1024];
 

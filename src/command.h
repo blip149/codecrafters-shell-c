@@ -11,6 +11,7 @@
     #define getcwd _getcwd
     #define chdir  _chdir
     #include <windows.h>
+    #define PATH_MAX 4096
 #else
     #include <unistd.h>
     #define PATH_SEP ":"
@@ -40,7 +41,7 @@ void find_path(const char* args);
 void run_external_program(const char* cmd_name, const char* args);
 int handle_command(Command* cmd);
 int is_builtin(const char* cmd);
-static void parse(const char* src, const char* start);
+static void parse( char* src, const char* start);
 void cd(const char* arg);
 int gwd();
 
