@@ -10,80 +10,86 @@ typedef enum{
     IN_SQUOTES,
 }State;
 
-static void parse(char* peek_ptr,const char* start){
-    if (!peek_ptr) return;
-
-    char* s_ptr = peek_ptr;
-    State state = NORMAL_STATE;
-    bool escaped = false;
-
-    while(*peek_ptr != '\0'){
-        if (escaped){
-            if(state == IN_DQUOTES){
-                if (*peek_ptr == '\\' || *peek_ptr =='$'|| *peek_ptr == '"'){
-                    *s_ptr++ = *peek_ptr;
-                }else{
-                    *s_ptr++ = '\\';
-                    *s_ptr++ = *peek_ptr;
-                }
-            }else{
-                *s_ptr++ = *peek_ptr;
-            }
-            escaped = false;
-            peek_ptr++;
-        }else if (state != IN_SQUOTES && *peek_ptr =='\\'){
-            escaped = true;
-            peek_ptr++;
-        }else if(*peek_ptr =='\'' && state != IN_DQUOTES){
-            state = (state == IN_SQUOTES) ? NORMAL_STATE:IN_SQUOTES;
-            peek_ptr++;
-        }else if (*peek_ptr == '"' && state != IN_SQUOTES) {
-            state = (state == IN_DQUOTES) ? NORMAL_STATE:IN_DQUOTES;
-            peek_ptr++;
-        }else {
-            if (*peek_ptr == ' ' && state == NORMAL_STATE){
-                if (s_ptr != start && *(s_ptr -1) != ' '){
-                    *s_ptr++ = *peek_ptr;
-                }
-                peek_ptr++;
-            }else{
-            *s_ptr++ = *peek_ptr++;
-            }
-        }
-    }
-    *s_ptr = '\0';
-}
-
 void parse_command(Command *cmd, const char* input) {
     if (cmd->cmd != NULL) {
         free(cmd->cmd);
         cmd->cmd = NULL;
     }
-
+    
+    memset(cmd, 0, sizeof(Command));
     strncpy(cmd->raw_input, input, sizeof(cmd->raw_input) - 1);
     cmd->raw_input[strcspn(cmd->raw_input, "\r\n")] = '\0';
 
-    char *first_space = strchr(cmd->raw_input, ' ');
+    char *peek_ptr = cmd->raw_input;
+    
+    while (*peek_ptr == ' ') peek_ptr++;
+    if (*peek_ptr == '\0') return;
 
-    if (first_space) {
-        size_t len = first_space - cmd->raw_input;
-        cmd->cmd = malloc(len + 1);
-        strncpy(cmd->cmd, cmd->raw_input, len);
-        cmd->cmd[len] = '\0';
+    char *s_ptr = peek_ptr;
+    char *token_start = s_ptr;
+    
+    State state = NORMAL_STATE;
+    bool escaped = false;
 
-        char *arg_ptr = first_space + 1;
-        while (*arg_ptr == ' ') {
-            arg_ptr++;
+    while (*peek_ptr != '\0') {
+        if (escaped) {
+            if (state == IN_DQUOTES) {
+                if (*peek_ptr == '\\' || *peek_ptr == '$' || *peek_ptr == '"') {
+                    *s_ptr++ = *peek_ptr;
+                } else {
+                    *s_ptr++ = '\\';
+                    *s_ptr++ = *peek_ptr;
+                }
+            } else {
+                *s_ptr++ = *peek_ptr;
+            }
+            escaped = false;
+            peek_ptr++;
+        } 
+        else if (state != IN_SQUOTES && *peek_ptr == '\\') {
+            escaped = true;
+            peek_ptr++;
+        } 
+        else if (*peek_ptr == '\'' && state != IN_DQUOTES) {
+            state = (state == IN_SQUOTES) ? NORMAL_STATE : IN_SQUOTES;
+            peek_ptr++;
+        } 
+        else if (*peek_ptr == '"' && state != IN_SQUOTES) {
+            state = (state == IN_DQUOTES) ? NORMAL_STATE : IN_DQUOTES;
+            peek_ptr++; 
+        } 
+        else if (*peek_ptr == ' ' && state == NORMAL_STATE) {
+            *s_ptr++ = '\0'; 
+
+            if (cmd->cmd == NULL) {
+                cmd->cmd = _strdup(token_start);
+            } else if (cmd->argc < LIMIT - 1) {
+                cmd->args[cmd->argc] = token_start;
+                cmd->argc++;
+            }
+
+            while (*peek_ptr == ' ') {
+                peek_ptr++;
+            }
+            
+            token_start = s_ptr; 
+        } 
+        else {
+            *s_ptr++ = *peek_ptr++;
         }
-        cmd->args = (*arg_ptr != '\0') ? arg_ptr : NULL;
-    } else {
-        cmd->cmd = _strdup(cmd->raw_input);
-        cmd->args = NULL;
     }
 
-
-    parse(cmd->cmd, cmd->cmd);
-    parse(cmd->args, cmd->args);
+    if (s_ptr != token_start) {
+        *s_ptr = '\0';
+        if (cmd->cmd == NULL) {
+            cmd->cmd = _strdup(token_start);
+        } else if (cmd->argc < LIMIT - 1) {
+            cmd->args[cmd->argc] = token_start;
+            cmd->argc++;
+        }
+    }
+    
+    cmd->args[cmd->argc] = NULL; 
 }
 
 int handle_command(Command* cmd) {
@@ -184,37 +190,21 @@ void run_external_program(const char* cmd, const char* args){
                 if (pid < 0){
                     perror("fork failed");
                 }else if (pid == 0){
-                    char cmd_line[LIMIT];
+                    char *argv[LIMIT + 2];
+                    int argc = 0;
 
-                    if (args && strlen(args)> 0){
-                        snprintf(cmd_line, sizeof(cmd_line), "\"%s\" %s", full_path, args);
-                    }else{
-                        snprintf(cmd_line, sizeof(cmd_line), "\"%s\"", full_path);
+                    argv[argc++] = (char*)cmd;
+
+                    for (int i = 0; i < cmd->argc; i++){
+                        argv[argc++] = cmd->argv[i];
                     }
 
-                    execlp("/bin/sh", "sh", "-c", cmd_line, (char *)NULL);
+                    // printf("Debug: Executing command [%s] with args [%s]\n", cmd, args);
+                    argv[argc] = NULL;
+                    execv(full_path, argv);
+                        
                     perror("execution failed");
                     exit(1);
-                    // int argc = 0;
-
-                    // argv[argc++] = (char*)cmd;
-
-                    // if (args && strlen(args)>0){
-                    //     char *args_copy = _strdup(args);
-                    //     char *tokens = strtok(args_copy, " ");
-
-                    //     while (tokens && argc < (LIMIT -1)){
-                    //        argv[argc++] = tokens;
-                    //        tokens = strtok(NULL," ");
-                    //     }
-                    // }
-
-                    // printf("Debug: Executing command [%s] with args [%s]\n", cmd, args);
-                    // argv[argc] = NULL;
-                    // execv(full_path, argv);
-                        
-                    // perror("execution failed");
-                    // exit(1);
                 }else{
                     int status;
                     waitpid(pid, &status, 0);
