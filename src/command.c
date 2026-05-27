@@ -99,7 +99,7 @@ int handle_command(Command* cmd) {
         return 0;
     }else if (strcmp(cmd->cmd, "echo")==0){
         for (int i = 0; i<cmd->argc; i++){
-            printf("%s%s\n", cmd->args[i], (i == cmd->argc - 1) ? "":" ");
+            printf("%s%s\n",  (i == cmd->argc - 1) ? cmd->args[i]:" ");
         }
         
     }else if (strcmp(cmd->cmd, "type")==0){
