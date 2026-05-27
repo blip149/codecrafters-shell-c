@@ -12,6 +12,7 @@
     #define chdir  _chdir
     #include <windows.h>
     #define PATH_MAX 4096
+    #define fileno _fileno
 
 #else
     #include <unistd.h>

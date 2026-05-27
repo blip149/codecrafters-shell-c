@@ -116,6 +116,7 @@ int handle_command(Command* cmd) {
         cd(cmd->argc > 0 ? cmd->args[0] : NULL);
     }
     else{
+        red_stdout(cmd);
         run_external_program(cmd);
     }
     return 1;
