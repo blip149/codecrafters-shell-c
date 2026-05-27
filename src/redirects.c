@@ -6,7 +6,7 @@ void red_stdout(Command* cmd) {
     if(!cmd || cmd->argc == 0) return;
 
     for (int i = 0; i<cmd->argc; i++) {
-        if (strcmp(cmd->args[i], ">") == 0){
+        if (strcmp(cmd->args[i], ">" || strcmp(cmd->args[i], "1>")) == 0){
 
             if (i + 1 >= cmd->argc) {
                 fprintf(stderr, "Shell error: no file specified");

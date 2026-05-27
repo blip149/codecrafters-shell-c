@@ -103,7 +103,6 @@ void parse_command(Command *cmd, const char* input) {
 int handle_command(Command* cmd) {
     if (!cmd->cmd) return 1;
 
-
     int original_stdout = dup(STDOUT_FILENO);
     if (original_stdout < 0) {
         perror("dup failed");
@@ -113,7 +112,6 @@ int handle_command(Command* cmd) {
     red_stdout(cmd);
 
     int result = 1;
-
 
     if (strcmp(cmd->cmd, "exit") == 0 || strcmp(cmd->cmd, "quit") == 0) {
         result = 0;
@@ -133,7 +131,6 @@ int handle_command(Command* cmd) {
     }
 
     fflush(stdout);
-
 
     dup2(original_stdout, STDOUT_FILENO);
     close(original_stdout);
