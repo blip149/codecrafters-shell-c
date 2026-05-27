@@ -184,29 +184,40 @@ void run_external_program(const char* cmd, const char* args){
                 if (pid < 0){
                     perror("fork failed");
                 }else if (pid == 0){
-                    char *argv[LIMIT];
-                    int argc = 0;
+                    char *cmd_line[LIMIT];
 
-                    argv[argc++] = (char*)cmd;
-
-                    if (args && strlen(args)>0){
-                        char *args_copy = _strdup(args);
-                        char *tokens = strtok(args_copy, " ");
-
-                        while (tokens && argc < (LIMIT -1)){
-                            argv[argc++] = tokens;
-                            tokens = strtok(NULL," ");
-                        }
-                    }
-                        printf("Debug: Executing command [%s] with args [%s]", cmd, args);
-                        argv[argc] = NULL;
-                        execv(full_path, argv);
-                        
-                        perror("execution failed");
-                        exit(1);
+                    if (args && strlen(args)> 0){
+                        snprintf(cmd_line, sizeof(cmd_line), "\"%s\" %s", full_path, args);
                     }else{
-                        int status;
-                        waitpid(pid, &status, 0);
+                        snprintf(cmd_line, sizeof(cmd_line), "\"%s\"", full_path);
+                    }
+
+                    execlp("/bin/sh", "sh", "-c", exe_cmd, (char *)NULL);
+                    perror("execution failed");
+                    exit(1);
+                    // int argc = 0;
+
+                    // argv[argc++] = (char*)cmd;
+
+                    // if (args && strlen(args)>0){
+                    //     char *args_copy = _strdup(args);
+                    //     char *tokens = strtok(args_copy, " ");
+
+                    //     while (tokens && argc < (LIMIT -1)){
+                    //        argv[argc++] = tokens;
+                    //        tokens = strtok(NULL," ");
+                    //     }
+                    // }
+
+                    // printf("Debug: Executing command [%s] with args [%s]\n", cmd, args);
+                    // argv[argc] = NULL;
+                    // execv(full_path, argv);
+                        
+                    // perror("execution failed");
+                    // exit(1);
+                }else{
+                    int status;
+                    waitpid(pid, &status, 0);
                     }
             #endif
             goto cleanup;
