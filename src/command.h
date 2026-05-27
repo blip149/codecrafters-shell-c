@@ -12,12 +12,14 @@
     #define chdir  _chdir
     #include <windows.h>
     #define PATH_MAX 4096
+
 #else
     #include <unistd.h>
     #define PATH_SEP ":"
     #define EXE_EXT ""
     #include <sys/types.h>
     #include <sys/wait.h>
+    #define _strdup strdup
 #endif
 #define LIMIT 64
 

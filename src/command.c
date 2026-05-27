@@ -198,7 +198,7 @@ void run_external_program(const char* cmd, const char* args){
                             tokens = strtok(NULL," ");
                         }
                     }
-                        printf("Debug: Executing command [%s] with args [%s]", cmd->cmd, cmd->args);
+                        printf("Debug: Executing command [%s] with args [%s]", cmd, args);
                         argv[argc] = NULL;
                         execv(full_path, argv);
                         
