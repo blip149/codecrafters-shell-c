@@ -18,7 +18,7 @@ int main() {
         if (!handle_command(&cmd)) {
             break; 
         }
-        red_stdout(&cmd, &buffer);
+        red_stdout(&cmd, buffer);
     }
 
 
