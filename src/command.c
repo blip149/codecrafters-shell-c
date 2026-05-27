@@ -1,4 +1,5 @@
 #include "command.h"
+#include "redirects.h"
 #include <stdbool.h>
 #define bool _Bool
 

@@ -1,6 +1,5 @@
 #include <stdio.h>
 #include "command.h"
-#include "redirects.h"
 
 
 
@@ -18,7 +17,6 @@ int main() {
         if (!handle_command(&cmd)) {
             break; 
         }
-        red_stdout(&cmd, buffer);
     }
 
 
