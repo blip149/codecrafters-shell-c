@@ -98,16 +98,19 @@ int handle_command(Command* cmd) {
     if (strcmp(cmd->cmd, "exit")==0 || strcmp(cmd->cmd, "quit")==0){
         return 0;
     }else if (strcmp(cmd->cmd, "echo")==0){
-        printf("%s\n", (cmd->cmd)? cmd->args:"");
+        for (int i = 0; i<cmd->argc; i++){
+            printf("%s%s\n", cmd->args[i], (i == cmd->argc - 1) ? "":" ");
+        }
+        
     }else if (strcmp(cmd->cmd, "type")==0){
-        find_path(cmd->args);
+        find_path(cmd->args[0]);
     }else if (strcmp(cmd->cmd, "pwd")==0){
         gwd();
     }else if (strcmp(cmd->cmd, "cd")==0){
-        cd(cmd->args);
+        cd(cmd->argc > 0 ? cmd->args[0] : NULL);
     }
     else{
-        run_external_program(cmd->cmd, cmd->args);
+        run_external_program(cmd);
     }
     return 1;
     
@@ -149,7 +152,8 @@ int is_builtin(const char *cmd) {
     }
     return 0;
 }
-void run_external_program(const char* cmd, const char* args){
+
+void run_external_program(Command* cmd) {
     char* path_copy = NULL;
     int found = 0;
 
@@ -161,8 +165,8 @@ void run_external_program(const char* cmd, const char* args){
     char full_path[1024];
 
     while(dir) {
-        snprintf(full_path, sizeof(full_path), "%s/%s%s", dir, cmd, EXE_EXT);
-        if (access(full_path, X_OK) == 0){
+        snprintf(full_path, sizeof(full_path), "%s/%s%s", dir, cmd->cmd, EXE_EXT);
+        if (access(full_path, X_OK) == 0) {
             found = 1;
             #ifdef _WIN32
                 STARTUPINFO si;
@@ -173,53 +177,56 @@ void run_external_program(const char* cmd, const char* args){
                 ZeroMemory(&pi, sizeof(pi));
 
                 char cmd_line[2048];
-                if (args && strlen(args)> 0){
-                    snprintf(cmd_line, sizeof(cmd_line), "\"%s\" %s", full_path, args);
-                }else{
-                    snprintf(cmd_line, sizeof(cmd_line), "\"%s\"", full_path);
+                int offset = snprintf(cmd_line, sizeof(cmd_line), "\"%s\"", full_path);
+                for (int i = 0; i < cmd->argc; i++) {
+                    offset += snprintf(cmd_line + offset, sizeof(cmd_line) - offset, " %s", cmd->args[i]);
                 }
-                if (CreateProcess(NULL, cmd_line, NULL, NULL, 0,FALSE,NULL, NULL,&si, &pi )){
+
+                if (CreateProcess(NULL, cmd_line, NULL, NULL, 0, FALSE, NULL, NULL, &si, &pi)) {
                     WaitForSingleObject(pi.hProcess, INFINITE);
                     CloseHandle(pi.hProcess);
                     CloseHandle(pi.hThread);
-                }else{
+                } else {
                     printf("failed to execute(%lu).\n", GetLastError());
                 }
             #else
                 pid_t pid = fork();
-                if (pid < 0){
+                if (pid < 0) {
                     perror("fork failed");
-                }else if (pid == 0){
-                    char *argv[LIMIT + 2];
-                    int argc = 0;
+                } else if (pid == 0) {
+                    char *argv[LIMIT];
+                    int local_argc = 0;
 
-                    argv[argc++] = (char*)cmd;
+                    // Element 0 must be the command name or full path path
+                    argv[local_argc++] = (char*)cmd->cmd;
 
-                    for (int i = 0; i < cmd->argc; i++){
-                        argv[argc++] = cmd->argv[i];
+                    // Directly pass our pre-split arguments with zero strtok tampering!
+                    for (int i = 0; i < cmd->argc && local_argc < (LIMIT - 1); i++) {
+                        argv[local_argc++] = cmd->args[i];
                     }
+                    argv[local_argc] = NULL;
 
-                    // printf("Debug: Executing command [%s] with args [%s]\n", cmd, args);
-                    argv[argc] = NULL;
                     execv(full_path, argv);
                         
                     perror("execution failed");
                     exit(1);
-                }else{
+                } else {
                     int status;
                     waitpid(pid, &status, 0);
-                    }
+                }
             #endif
             goto cleanup;
         }
         dir = strtok(NULL, PATH_SEP);
     }
-    cleanup:
-        if (!found){
-            printf("%s: command not found\n", cmd);
-        }
-        if (path_copy) free(path_copy);
+
+cleanup:
+    if (!found) {
+        printf("%s: command not found\n", cmd->cmd);
+    }
+    if (path_copy) free(path_copy);
 }
+
 
 void find_path(const char *args) {
     char *path_copy = NULL;

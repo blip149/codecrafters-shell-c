@@ -41,7 +41,7 @@ typedef struct{
 
 void parse_command(Command* cmd, const char *input);
 void find_path(const char* args);
-void run_external_program(const char* cmd_name, const char* args);
+void run_external_program(Command *cmd);
 int handle_command(Command* cmd);
 int is_builtin(const char* cmd);
 void cd(const char* arg);
