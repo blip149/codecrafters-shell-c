@@ -184,7 +184,7 @@ void run_external_program(const char* cmd, const char* args){
                 if (pid < 0){
                     perror("fork failed");
                 }else if (pid == 0){
-                    char *cmd_line[LIMIT];
+                    char cmd_line[LIMIT];
 
                     if (args && strlen(args)> 0){
                         snprintf(cmd_line, sizeof(cmd_line), "\"%s\" %s", full_path, args);
@@ -192,7 +192,7 @@ void run_external_program(const char* cmd, const char* args){
                         snprintf(cmd_line, sizeof(cmd_line), "\"%s\"", full_path);
                     }
 
-                    execlp("/bin/sh", "sh", "-c", exe_cmd, (char *)NULL);
+                    execlp("/bin/sh", "sh", "-c", cmd_line, (char *)NULL);
                     perror("execution failed");
                     exit(1);
                     // int argc = 0;
