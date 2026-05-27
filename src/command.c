@@ -57,8 +57,8 @@ static void parse(const char* peek_ptr,const char* start){
 void parse_command(Command *cmd, const char* input) {
     if (cmd->cmd != NULL) {
         free(cmd->cmd);
-        cmd->cmd = NULL;
     }
+    memset(cmd, 0, sizeof(Command));
 
     strncpy(cmd->raw_input, input, sizeof(cmd->raw_input) - 1);
     cmd->raw_input[strcspn(cmd->raw_input, "\r\n")] = '\0';
