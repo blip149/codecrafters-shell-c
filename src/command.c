@@ -15,17 +15,23 @@ void parse_command(Command *cmd, const char* input) {
         free(cmd->cmd);
         cmd->cmd = NULL;
     }
+    for (int i = 0; i < cmd->argc; i++) {
+        if (cmd->args[i] != NULL) {
+            free(cmd->args[i]);
+            cmd->args[i] = NULL;
+        }
+    }
     
     memset(cmd, 0, sizeof(Command));
     strncpy(cmd->raw_input, input, sizeof(cmd->raw_input) - 1);
     cmd->raw_input[strcspn(cmd->raw_input, "\r\n")] = '\0';
 
     char *peek_ptr = cmd->raw_input;
-    
     while (*peek_ptr == ' ') peek_ptr++;
     if (*peek_ptr == '\0') return;
 
-    char *s_ptr = peek_ptr;
+    char clean_buffer[1024];
+    char *s_ptr = clean_buffer;
     char *token_start = s_ptr;
     
     State state = NORMAL_STATE;
@@ -56,7 +62,7 @@ void parse_command(Command *cmd, const char* input) {
         } 
         else if (*peek_ptr == '"' && state != IN_SQUOTES) {
             state = (state == IN_DQUOTES) ? NORMAL_STATE : IN_DQUOTES;
-            peek_ptr++; 
+            peek_ptr++;
         } 
         else if (*peek_ptr == ' ' && state == NORMAL_STATE) {
             *s_ptr++ = '\0'; 
@@ -64,14 +70,13 @@ void parse_command(Command *cmd, const char* input) {
             if (cmd->cmd == NULL) {
                 cmd->cmd = _strdup(token_start);
             } else if (cmd->argc < LIMIT - 1) {
-                cmd->args[cmd->argc] = token_start;
+                cmd->args[cmd->argc] = _strdup(token_start);
                 cmd->argc++;
             }
 
             while (*peek_ptr == ' ') {
                 peek_ptr++;
             }
-            
             token_start = s_ptr; 
         } 
         else {
@@ -84,12 +89,12 @@ void parse_command(Command *cmd, const char* input) {
         if (cmd->cmd == NULL) {
             cmd->cmd = _strdup(token_start);
         } else if (cmd->argc < LIMIT - 1) {
-            cmd->args[cmd->argc] = token_start;
+            cmd->args[cmd->argc] = _strdup(token_start); 
             cmd->argc++;
         }
     }
     
-    cmd->args[cmd->argc] = NULL; 
+    cmd->args[cmd->argc] = NULL;
 }
 
 int handle_command(Command* cmd) {
