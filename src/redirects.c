@@ -2,7 +2,6 @@
 #include <stdlib.h>
 
 void red_stdout(Command* cmd, char* input) {
-    parse_command(cmd, input);
 
     for (int i = 0 ; i < cmd->argc; i++){
         if (cmd->args[i] == ">"){
