@@ -9,7 +9,7 @@ void red_stdout(Command* cmd, char* input) {
             char* content = cmd->args[i - 1];
             FILE* stream = fopen(cmd->args[i++], "w");
 
-            fprintf(stream, *content);
+            fprintf(stream, content);
             fclose(stream);
         }
     }
