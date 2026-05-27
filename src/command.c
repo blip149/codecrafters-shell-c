@@ -10,48 +10,48 @@ typedef enum{
     IN_SQUOTES,
 }State;
 
-static void parse(const char* src,const char* start){
-    if (!src) return;
+static void parse(const char* peek_ptr,const char* start){
+    if (!peek_ptr) return;
 
-    char* dst = src;
+    char* s_ptr = peek_ptr;
     State state = NORMAL_STATE;
     bool escaped = false;
 
-    while(*src != '\0'){
+    while(*peek_ptr != '\0'){
         if (escaped){
             if(state == IN_DQUOTES){
-                if (*src == '\\' || *src =='$'|| *src == '"'){
-                    *dst++ = *src;
+                if (*peek_ptr == '\\' || *peek_ptr =='$'|| *peek_ptr == '"'){
+                    *s_ptr++ = *peek_ptr;
                 }else{
-                    *dst = '\\';
-                    *dst++ = *src;
+                    *s_ptr = '\\';
+                    *s_ptr++ = *peek_ptr;
                 }
             }else{
-                *dst++ = *src;
+                *s_ptr++ = *peek_ptr;
             }
             escaped = false;
-            *src++;
-        }else if (state != IN_SQUOTES && *src =='\\'){
+            *peek_ptr++;
+        }else if (state != IN_SQUOTES && *peek_ptr =='\\'){
             escaped = true;
-            src++;
-        }else if(*src =='\'' && state != IN_DQUOTES){
+            peek_ptr++;
+        }else if(*peek_ptr =='\'' && state != IN_DQUOTES){
             state = (state == IN_SQUOTES) ? NORMAL_STATE:IN_SQUOTES;
-            src++;
-        }else if (*src == '"' && state != IN_SQUOTES) {
+            peek_ptr++;
+        }else if (*peek_ptr == '"' && state != IN_SQUOTES) {
             state = (state == IN_DQUOTES) ? NORMAL_STATE:IN_DQUOTES;
-            src++;
+            peek_ptr++;
         }else {
-            if (*src == ' ' && state == NORMAL_STATE){
-                if (dst != start && *(dst -1) != ' '){
-                    *dst++ = *src;
+            if (*peek_ptr == ' ' && state == NORMAL_STATE){
+                if (s_ptr != start && *(s_ptr -1) != ' '){
+                    *s_ptr++ = *peek_ptr;
                 }
-                src++;
+                peek_ptr++;
             }else{
-            *dst++ = *src++;
+            *s_ptr++ = *peek_ptr++;
             }
         }
     }
-    *dst = '\0';
+    *s_ptr = '\0';
 }
 
 void parse_command(Command *cmd, const char* input) {
