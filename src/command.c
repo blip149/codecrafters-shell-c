@@ -109,7 +109,7 @@ int handle_command(Command* cmd) {
         return 1;
     }
 
-    red_stdout(cmd);
+    red_std(cmd);
 
     int result = 1;
 
