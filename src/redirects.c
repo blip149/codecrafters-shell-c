@@ -28,9 +28,9 @@ void red_std(Command* cmd) {
 
             int file_fd = fileno(stream);
 
-            int target_fd = (is_stdout || is_stdout_append)? STDOUT_FILENO : STDERR_FILENO;
+            int target_fno = (is_stdout || is_stdout_append)? STDOUT_FILENO : STDERR_FILENO;
 
-            if(dup2(file_fd, target_fd) < 0){
+            if(dup2(file_fd, target_fno) < 0){
                 perror("dup2 failed");
                 fclose(stream);
                 return;

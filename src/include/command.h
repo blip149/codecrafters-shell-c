@@ -12,6 +12,8 @@
     #define chdir  _chdir
     #include <windows.h>
     #define PATH_MAX 4096
+    #define STDOUT_FILENO 1
+    #define STDERR_FILENO 2
     #define fileno _fileno
     #define dup _dup
     #define dup2 _dup2

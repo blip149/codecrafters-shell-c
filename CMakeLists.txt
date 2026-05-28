@@ -2,11 +2,17 @@ cmake_minimum_required(VERSION 3.13)
 
 project(codecrafters-shell)
 
-file(GLOB_RECURSE SOURCE_FILES src/*.c src/*.h)
 
 set(CMAKE_C_STANDARD 23) # Enable the C23 standard
 
-add_executable(shell ${SOURCE_FILES})
+add_executable(shell 
+    src/main.c
+    src/command.c
+    src/redirects.c
+    src/autocomplete.c
+)
+
+target_include_directories(shell PRIVATE src/include)
 
 if (NOT WIN32)
     target_link_libraries(shell PRIVATE readline)
