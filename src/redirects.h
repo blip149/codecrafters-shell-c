@@ -2,6 +2,6 @@
 #define REDIRECTS_H
 
 #include "command.h"
-void red_stdout(Command* cmd);
+void red_std(Command* cmd);
 
 #endif
