@@ -26,6 +26,7 @@
     #include <sys/types.h>
     #include <sys/wait.h>
     #define _strdup strdup
+    #include <termios.h>
 #endif
 #define LIMIT 64
 
@@ -36,6 +37,7 @@
 #include <stdlib.h>
 #include <limits.h>
 #include <errno.h>
+
 
 
 typedef struct{

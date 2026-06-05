@@ -9,7 +9,7 @@ void enable_raw_mode(){
         DWORD cooked_mode = 0;
 
         GetConsoleMode(hInput, &cooked_mode);
-        DWORD raw_mode = cooked_mode & ~(ENABLE_LINE_INPUT || ENABLE_ECHO_INPUT);
+        DWORD raw_mode = cooked_mode & ~(ENABLE_LINE_INPUT | ENABLE_ECHO_INPUT);
         SetConsoleMode(hInput, raw_mode);
 
     #else
@@ -17,7 +17,7 @@ void enable_raw_mode(){
         tcgetattr(STDIN_FILENO, &cooked_mode);
 
         struct termios raw_mode = cooked_mode;
-        raw_mode.c_lflags &= ~ (ICANON || ECHO);
+        raw_mode.c_lflag &= ~ (ICANON | ECHO);
         tcsetattr(STDIN_FILENO, TCSAFLUSH, &raw_mode);
     #endif
 }
