@@ -35,7 +35,7 @@ int main() {
                 DWORD read;
                 ReadConsoleA(GetStdHandle(STD_INPUT_HANDLE), &c, 1, &read, NULL);
             #else
-                read(STDIN_FILENO, &ch, 1);
+                read(STDIN_FILENO, &c, 1);
             #endif
 
             if (c == '\t') {
