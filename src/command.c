@@ -1,9 +1,10 @@
 #include "command.h"
 #include "redirects.h"
+#include "builtins.h"
 #include <stdbool.h>
 #define bool _Bool
 
-static const char* builtins[] = {"echo", "exit", "type", "quit", "pwd"};
+const char* builtins[] = {"echo", "exit", "type", "quit", "pwd", NULL};
 
 typedef enum{
     NORMAL_STATE,
@@ -144,6 +145,9 @@ int gwd() {
     char cwd[PATH_MAX];
 
     if (getcwd(cwd, sizeof(cwd))!=NULL){
+        printf("Path\n");
+        printf("---\n");
+        printf("\n\n\n");
         printf("%s\n", cwd);
     }else{
         perror("Error");
