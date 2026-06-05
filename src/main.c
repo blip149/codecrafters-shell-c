@@ -14,10 +14,8 @@ int main() {
 
         if(getcwd(cwd, sizeof(cwd)) != NULL){
             char* home = getenv("HOME");
-
             if(home && strcmp(cwd, home)==0){
                 printf("$ ");
-
             }else{
                 printf("%s\n $ ", cwd);
             }
@@ -25,13 +23,48 @@ int main() {
             printf("$ "); 
         }
 
-        if (!fgets(buffer, sizeof(buffer), stdin)) break;
+        memset(buffer, 0, sizeof(buffer));
+        int buf_len = 0;
 
         enable_raw_mode();
-        if (strcmp(buffer, "\t")==0){
-            autocomplete(buffer);
+
+        while (buf_len < sizeof(buffer) - 1) {
+            char c;
+            
+            #if defined(_WIN32)
+                DWORD read;
+                ReadConsoleA(GetStdHandle(STD_INPUT_HANDLE), &c, 1, &read, NULL);
+            #else
+                read(STDIN_FILENO, &ch, 1);
+            #endif
+
+            if (c == '\t') {
+                autocomplete(buffer); 
+                continue;
+            }
+
+
+            if (c == '\n' || c == '\r') {
+                printf("\n");
+                break;
+            }
+
+            if (c == 127 || c == '\b') {
+                if (buf_len > 0) {
+                    buf_len--;
+                    buffer[buf_len] = '\0';
+                    printf("\b \b"); 
+                }
+                continue;
+            }
+
+            buffer[buf_len++] = c;
+            printf("%c", c);
         }
+
         disable_raw_mode();
+
+        if (buf_len == 0) continue;
 
         parse_command(&cmd, buffer);
         
@@ -40,10 +73,9 @@ int main() {
         }
     }
 
-
     if (cmd.cmd) free(cmd.cmd); 
-
     return 0;
 }
+
 
 
