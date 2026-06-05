@@ -28,7 +28,7 @@ int main() {
         if (!fgets(buffer, sizeof(buffer), stdin)) break;
 
         enable_raw_mode();
-        if (strcmp(buffer, '\t')==0){
+        if (strcmp(buffer, "\t")==0){
             autocomplete(buffer);
         }
         disable_raw_mode();
